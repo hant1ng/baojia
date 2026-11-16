@@ -94,6 +94,34 @@
     window.pdfMake.addFonts({ NotoSansSC: font });
     fontRegistered = true;
   }
+  // 连续单页模式：按内容估计所需纸张高度，避免传统 A4 分页在表格中形成视觉断层。
+  // 高度单位是 PDF pt。若内容极端超长，pdfmake 仍可自动溢出到后续页面。
+  function estimatePageHeight(displayed, doc, seller, customer, hasSeal) {
+    var widthChars = [8, 12, 13, 20, 5, 8, 12, 13, 11, 18];
+    var rowTotal = 0;
+    displayed.forEach(function (r) {
+      var fields = [r.custNo, r.name, r.model, r.unit, r.qty, r.price, r.delivery, r.remark];
+      var maxLines = 1;
+      fields.forEach(function (v, i) {
+        var chars = str(v).split('\\n');
+        var approx = chars.reduce(function (sum, chunk) {
+          // 中文占用宽度较大，给窄列保留足够换行余量。
+          var units = Array.from(chunk).reduce(function (n, ch) { return n + (/[^\\x00-\\x7f]/.test(ch) ? 2 : 1); }, 0);
+          return sum + Math.max(1, Math.ceil(units / widthChars[Math.min(i + 1, 9)]));
+        }, 0);
+        maxLines = Math.max(maxLines, approx);
+      });
+      rowTotal += Math.max(23, 12 + maxLines * 12);
+    });
+    var terms = str(doc.remark).split('\\n').reduce(function (n, t) { return n + Math.max(1, Math.ceil(t.length / 105)); }, 0);
+    var misc = 340 + Math.max(0, terms - 4) * 15;
+    if (str(customer.address).length > 60) misc += 30;
+    if (str(seller.company).length > 30) misc += 25;
+    if (hasSeal) misc += 35;
+    // 留足 PDF 字体度量误差空间，同时避免短报价出现过大的空白页尾。
+    return Math.min(14000, Math.max(595.28, Math.ceil(misc + rowTotal + 60)));
+  }
+
   function makeDefinition(data, logo, seal) {
     var seller = data.seller || {}, doc = data.doc || {}, customer = data.customer || {};
     var items = Array.isArray(data.items) ? data.items : [];
@@ -178,7 +206,8 @@
       ], columnGap: 40, unbreakable: true }
     ];
     return {
-      pageSize: 'A4', pageOrientation: 'landscape',
+      // 横向 A4 宽度，纵向高度随报价内容增长，保持连续完整的一张 PDF 页面。
+      pageSize: { width: 841.89, height: estimatePageHeight(displayed, doc, seller, customer, !!seal) },
       pageMargins: [35, 35, 35, 48],
       content: content,
       defaultStyle: { font: 'NotoSansSC', fontSize: 9, color: '#171717' },
@@ -187,7 +216,7 @@
         return { columns: [
           { text: '地址：' + str(seller.address) + '   电话：' + str(seller.phone) + '\n邮箱：' + str(seller.email), width: '*' },
           { text: '开户行：' + str(seller.bank) + '\n账号：' + str(seller.account), width: '*' },
-          { text: pageNo + ' / ' + pageCount, width: 40, alignment: 'right' }
+          { text: pageCount === 1 ? '报价单' : pageNo + ' / ' + pageCount, width: 40, alignment: 'right' }
         ], columnGap: 10, fontSize: 7, color: '#666666', margin: [35, 8, 35, 0] };
       }
     };
