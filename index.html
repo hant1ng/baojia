@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>报价单生成器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="toolbar no-print">
+  <div class="brand">
+    <div class="brand-mark">报</div>
+    <div class="brand-text">
+      <h1>报价单生成器</h1>
+      <p>填写信息，一键生成排版工整、可直接打印的 A4 报价单</p>
+    </div>
+  </div>
+  <div class="toolbar-actions">
+    <span id="save-status" class="save-status">自动保存已开启</span>
+    <button id="btn-print" class="btn btn-primary" title="打印前请在“更多设置”中关闭页眉和页脚，再另存为 PDF，可获得文字清晰的矢量 PDF">打印 / 另存为 PDF</button>
+    <button id="btn-pdf" class="btn btn-accent" title="无需弹出窗口，直接下载 PDF 文件">直接下载 PDF</button>
+    <button id="btn-sample" class="btn btn-ghost">载入示例</button>
+    <button id="btn-clear" class="btn btn-ghost danger">清空</button>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <!-- ============ 编辑区 ============ -->
+  <section class="editor-panel no-print">
+
+    <div class="card">
+      <h2 class="card-title"><span class="step">1</span> 我方公司信息 <small>显示在页眉与页脚</small></h2>
+      <div class="grid-2">
+        <label class="field span-2">公司名称<input type="text" data-bind="seller.company" placeholder="例如：示例科技有限公司"></label>
+        <label class="field span-2">公司地址<input type="text" data-bind="seller.address" placeholder="例如：XX市XX区XX路XX号"></label>
+        <label class="field">联系人<input type="text" data-bind="seller.contact" placeholder="联系人"></label>
+        <label class="field">联系电话<input type="text" data-bind="seller.phone" placeholder="电话 / 手机"></label>
+        <label class="field">开户银行<input type="text" data-bind="seller.bank" placeholder="开户银行"></label>
+        <label class="field">银行账号<input type="text" data-bind="seller.account" placeholder="银行账号"></label>
+        <label class="field span-2">税号<input type="text" data-bind="seller.tax" placeholder="纳税人识别号（可选）"></label>
+        <label class="field">公司网站<input type="text" data-bind="seller.website" placeholder="https://www.example.com"></label>
+        <label class="field">联系邮箱<input type="text" data-bind="seller.email" placeholder="sales@example.com"></label>
+      </div>
+      <div class="logo-controls">
+        <img id="logo-thumb" class="logo-thumb" alt="Logo 预览" style="display:none">
+        <div id="logo-placeholder" class="logo-placeholder">未上传 Logo<br>报价单默认不显示</div>
+        <div>
+          <p class="hint" style="margin:0 0 6px">上传后显示在报价单左上角；不上传则不显示。尺寸可随时调整。</p>
+          <input type="file" id="logo-file" accept="image/*" class="control">
+          <div class="logo-size-row">
+            <label>宽度 <input type="range" id="logo-width" min="12" max="60" step="1" value="40"> <b id="logo-width-val">40mm</b></label>
+            <label>高度上限 <input type="range" id="logo-height" min="8" max="28" step="1" value="16"> <b id="logo-height-val">16mm</b></label>
+          </div>
+          <div class="logo-actions">
+            <button id="btn-logo-trim" class="btn btn-mini">去除白边</button>
+            <button id="btn-logo-reset" class="btn btn-mini">移除 Logo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="step">2</span> 客户信息 <small>可保存多个客户，随时切换</small></h2>
+      <div class="customer-bar">
+        <select id="customer-select" class="control" aria-label="选择已保存客户"></select>
+        <button id="btn-customer-new" class="btn btn-mini">新建</button>
+        <button id="btn-customer-save" class="btn btn-mini primary">保存客户</button>
+        <button id="btn-customer-delete" class="btn btn-mini danger">删除</button>
+      </div>
+      <div class="grid-2">
+        <label class="field span-2">客户名称<input type="text" data-bind="cust.name" placeholder="客户公司全称"></label>
+        <label class="field span-2">客户地址<input type="text" data-bind="cust.address" placeholder="客户地址"></label>
+        <label class="field">联系人<input type="text" data-bind="cust.contact" placeholder="客户联系人"></label>
+        <label class="field">联系电话<input type="text" data-bind="cust.phone" placeholder="客户电话"></label>
+      </div>
+      <p class="hint">修改客户字段后点击“保存客户”即写入本地存储；下次打开可直接从下拉框选择。</p>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="step">3</span> 单据信息</h2>
+      <div class="grid-2">
+        <label class="field">报价单号<input type="text" data-bind="doc.no" placeholder="例如：BJ20261116001"></label>
+        <label class="field">报价日期<input type="date" data-bind="doc.date"></label>
+        <label class="field">有效期至<input type="date" data-bind="doc.validUntil"></label>
+        <label class="field">税率（%）<input type="number" data-bind="doc.taxRate" min="0" max="100" step="0.01" placeholder="0"></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="step">4</span> 产品明细 <small>金额自动计算</small>
+        <label class="col-toggle" title="控制报价单中是否显示交期列"><input type="checkbox" id="chk-delivery" checked> 显示交期列</label>
+      </h2>
+      <p class="hint" id="paste-hint" style="margin:0 0 10px">支持从 Excel 整块粘贴：按 <b>客户料号 → 品名 → 型号规格 → 单位 → 数量 → 单价 → 交期 → 备注</b> 的顺序复制多行，点第 1 行第 1 格后按 Ctrl+V，即可一次填入多行（金额自动计算，不必复制）。</p>
+      <div class="items-wrap">
+        <table class="items-editor">
+          <thead>
+            <tr>
+              <th class="col-idx">#</th>
+              <th class="col-custno">客户料号</th>
+              <th class="col-name">品名</th>
+              <th class="col-model">型号规格</th>
+              <th class="col-unit">单位</th>
+              <th class="col-qty">数量</th>
+              <th class="col-price">单价 (¥)</th>
+              <th class="col-amt">金额 (¥)</th>
+              <th class="col-delivery delivery-col">交期</th>
+              <th class="col-remark">备注</th>
+              <th class="col-op"></th>
+            </tr>
+          </thead>
+          <tbody id="items-body"></tbody>
+        </table>
+      </div>
+      <button id="btn-add-row" class="btn btn-mini add-row">＋ 添加一行</button>
+
+      <div class="totals-editor">
+        <div><span>不含税金额</span><strong id="t-subtotal">¥0.00</strong></div>
+        <div><span>税额</span><strong id="t-tax">¥0.00</strong></div>
+        <div class="grand"><span>含税合计</span><strong id="t-total">¥0.00</strong></div>
+        <div class="upper"><span>大写金额</span><strong id="t-upper">零元整</strong></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="step">5</span> 备注与条款</h2>
+      <label class="field">备注内容<textarea data-bind="doc.remark" rows="4" placeholder="例如：1. 报价有效期30天；2. 付款方式：款到发货；3. 以上价格含税/不含税……"></textarea></label>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="step">6</span> 公章设置</h2>
+      <div class="seal-controls">
+        <img id="seal-thumb" class="seal-thumb" alt="公章预览">
+        <div>
+          <p class="hint">默认使用示例公章。请上传你的真实公章 PNG（建议透明背景），上传后保存在浏览器本地。</p>
+          <input type="file" id="seal-file" accept="image/png,image/*" class="control">
+          <button id="btn-seal-reset" class="btn btn-mini">恢复默认公章</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="step">7</span> 默认值设置 <small>新建/清空时套用</small></h2>
+      <p class="hint" style="margin:0 0 10px">在这里设置“我方信息”“备注与条款”的默认内容。保存后，点“清空”或首次打开时会带出这些内容；报价单号每次新建自动生成“年月日时分秒”。</p>
+      <div class="grid-2">
+        <label class="field span-2">默认公司名称<input type="text" data-def="company" placeholder="例如：示例科技有限公司"></label>
+        <label class="field">默认联系人<input type="text" data-def="contact" placeholder="联系人"></label>
+        <label class="field">默认联系电话<input type="text" data-def="phone" placeholder="电话 / 手机"></label>
+        <label class="field">默认开户银行<input type="text" data-def="bank" placeholder="开户银行"></label>
+        <label class="field">默认银行账号<input type="text" data-def="account" placeholder="银行账号"></label>
+        <label class="field">默认税号<input type="text" data-def="tax" placeholder="纳税人识别号"></label>
+        <label class="field">默认网址<input type="text" data-def="website" placeholder="https://www.example.com"></label>
+        <label class="field span-2">默认公司地址<input type="text" data-def="address" placeholder="地址"></label>
+        <label class="field span-2">默认联系邮箱<input type="text" data-def="email" placeholder="sales@example.com"></label>
+        <label class="field span-2">默认备注与条款<textarea data-def="remark" rows="4" placeholder="例如：1. 报价有效期30天……"></textarea></label>
+        <label class="field">默认税率（%）<input type="number" data-def="taxRate" min="0" max="100" step="0.01" placeholder="0"></label>
+        <label class="field">默认有效期天数<input type="number" data-def="validDays" min="0" max="365" step="1" placeholder="1"></label>
+      </div>
+      <div class="logo-actions" style="margin-top:12px">
+        <button id="btn-save-defaults" class="btn btn-mini primary">保存默认值</button>
+        <button id="btn-clear-defaults" class="btn btn-mini danger">清除默认值</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ 预览区 ============ -->
+  <section class="preview-panel">
+    <div class="preview-head no-print">
+      <div class="preview-title">实时预览 <span>A4 横向 · 297 × 210 mm</span>
+        <div class="preview-sub">打印时请在打印窗口的「更多设置」中关闭“页眉和页脚”，以免出现日期、网址和页码</div>
+      </div>
+      <div class="preview-zoom">
+        <button id="zoom-out" class="btn btn-mini" title="缩小">−</button>
+        <span id="zoom-label">100%</span>
+        <button id="zoom-in" class="btn btn-mini" title="放大">＋</button>
+        <button id="zoom-fit" class="btn btn-mini">适应宽度</button>
+      </div>
+    </div>
+    <div id="preview-stage" class="preview-stage">
+      <div id="quote-page" class="page"></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script src="lib/html2canvas.min.js"></script>
+<script src="lib/jspdf.umd.min.js"></script>
+<script src="assets/seal.b64.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
