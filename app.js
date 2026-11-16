@@ -3,7 +3,7 @@
   'use strict';
 
   var STORAGE_KEY = 'quotation_app_state_v1';
-  var DEFAULTS_KEY = 'quotation_app_defaults_v1';
+  var DEFAULTS_KEY = 'quotation_app_defaults_v2';
   var DEFAULT_SEAL = (typeof window.DEFAULT_SEAL_DATAURL === 'string' && window.DEFAULT_SEAL_DATAURL)
     ? window.DEFAULT_SEAL_DATAURL : 'assets/seal.png';
   var CN_DIGITS = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
@@ -114,7 +114,15 @@
 
   /* ---------- 状态与存储 ---------- */
   var DEFAULT_DEFAULTS = {
-    company: '', address: '', contact: '', phone: '', bank: '', account: '', tax: '', website: '', email: '',
+    company: '昆山日不落自动化设备有限公司',
+    address: '昆山市玉山镇五联路698号5号房',
+    contact: '韩娟',
+    phone: '18915758302',
+    bank: '昆山农村商业银行股份有限公司玉山支行',
+    account: '3052249012014000003622',
+    tax: '91320583MA203C069G',
+    website: 'https://www.ribloxen.com',
+    email: 'han.juan@ribloxen.com',
     remark: '', taxRate: '0', validDays: '1'
   };
   function loadDefaults() {
@@ -160,7 +168,8 @@
       logoHeight: 16,
       logoTrimmed: false,
       showDelivery: false,
-      deliveryTouched: false
+      deliveryTouched: false,
+      sellerFilled: true
     };
   }
   function sampleState() {
@@ -205,7 +214,18 @@
       if (!raw) return base;
       var p = JSON.parse(raw);
       if (p && typeof p === 'object') {
-        base.seller = Object.assign(base.seller, p.seller || {});
+        // 老数据迁移：此前未标记 sellerFilled 的存档，仅用其中非空的字段覆盖新默认值，
+        // 这样旧存档不会被清空值盖掉新默认公司信息，也不会丢掉用户已经填过的内容。
+        base.sellerFilled = p.sellerFilled === true;
+        if (!base.sellerFilled) {
+          var oldSeller = p.seller || {};
+          Object.keys(base.seller).forEach(function (k) {
+            if (String(oldSeller[k] || '').trim()) base.seller[k] = oldSeller[k];
+          });
+          base.sellerFilled = true;
+        } else {
+          base.seller = Object.assign(base.seller, p.seller || {});
+        }
         base.doc = Object.assign(base.doc, p.doc || {});
         if (Array.isArray(p.customers) && p.customers.length) base.customers = p.customers;
         if (Array.isArray(p.items) && p.items.length) {
