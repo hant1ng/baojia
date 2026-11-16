@@ -133,9 +133,9 @@
       <div class="seal-controls">
         <img id="seal-thumb" class="seal-thumb" alt="公章预览">
         <div>
-          <p class="hint">默认使用示例公章。请上传你的真实公章 PNG（建议透明背景），上传后保存在浏览器本地。</p>
+          <p class="hint">线上部署时默认读取 assets/seal.png（替换该文件并重新部署即可全局生效）；本地双击打开时读取内嵌图片以保证导出 PDF 正常。若只想本机临时使用，可在此上传 PNG（保存到浏览器本地，不影响线上）。</p>
           <input type="file" id="seal-file" accept="image/png,image/*" class="control">
-          <button id="btn-seal-reset" class="btn btn-mini">恢复默认公章</button>
+          <button id="btn-seal-reset" class="btn btn-mini">恢复默认样章</button>
         </div>
       </div>
     </div>

@@ -4,8 +4,14 @@
 
   var STORAGE_KEY = 'quotation_app_state_v1';
   var DEFAULTS_KEY = 'quotation_app_defaults_v2';
-  var DEFAULT_SEAL = (typeof window.DEFAULT_SEAL_DATAURL === 'string' && window.DEFAULT_SEAL_DATAURL)
-    ? window.DEFAULT_SEAL_DATAURL : 'assets/seal.png';
+  /* 默认公章读取策略：
+     - 线上部署（http/https，如 GitHub Pages / Cloudflare Pages）直接读取 assets/seal.png。
+       同源图片不会污染 canvas，替换该文件并重新部署即可全局生效。
+     - 本地双击打开（file://）时外链图片会污染 canvas，导致“直接下载 PDF”失败，
+       因此回退到 assets/seal.b64.js 内嵌的 base64 图片。 */
+  var DEFAULT_SEAL = (location.protocol === 'file:' && typeof window.DEFAULT_SEAL_DATAURL === 'string' && window.DEFAULT_SEAL_DATAURL)
+    ? window.DEFAULT_SEAL_DATAURL
+    : 'assets/seal.png';
   var CN_DIGITS = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
   var CN_UNITS = ['', '拾', '佰', '仟'];
   var CN_GROUPS = ['', '万', '亿', '兆'];
@@ -123,9 +129,7 @@
     tax: '91320583MA203C069G',
     website: 'https://www.ribloxen.com',
     email: 'han.juan@ribloxen.com',
-    remark: '1. 本报价自报价日起以商品特性不同天数内有效，逾期价格需重新确认。\n2. 质量按国标/行标/双方确认样品执行；货到三日内提出异议，逾期视为验收合格。\n3. 非耗材类产品质保期6个月，人为损坏除外。\n4. 本报价经双方盖章或确认订单后生效或贵公司下正式订单给我司。',
-    taxRate: '13', 
-    validDays: '1'
+    remark: '', taxRate: '0', validDays: '1'
   };
   function loadDefaults() {
     var d = Object.assign({}, DEFAULT_DEFAULTS);
