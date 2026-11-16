@@ -123,7 +123,7 @@
     tax: '91320583MA203C069G',
     website: 'https://www.ribloxen.com',
     email: 'han.juan@ribloxen.com',
-    remark: '', taxRate: '0', validDays: '1'
+    remark: '1. 本报价自报价日起以商品特性不同天数内有效，逾期价格需重新确认。\n2. 质量按国标/行标/双方确认样品执行；货到三日内提出异议，逾期视为验收合格。\n3. 非耗材类产品质保期6个月，人为损坏除外。\n4. 本报价经双方盖章或确认订单后生效或贵公司下正式订单给我司。',, taxRate: '0', validDays: '1'
   };
   function loadDefaults() {
     var d = Object.assign({}, DEFAULT_DEFAULTS);
