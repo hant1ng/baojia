@@ -32,6 +32,10 @@
     var v = Number(n) || 0;
     return '¥' + v.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
+  // 去掉值前后的空白（含半角/全角空格、制表符、换行），避免页脚"地址："后出现多余空格
+  function trimVal(v) {
+    return String(v == null ? '' : v).replace(/^[\s\u3000]+|[\s\u3000]+$/g, '');
+  }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
   function todayISO() {
     var d = new Date();
@@ -155,7 +159,8 @@
       logoWidth: 40,
       logoHeight: 16,
       logoTrimmed: false,
-      showDelivery: true
+      showDelivery: false,
+      deliveryTouched: false
     };
   }
   function sampleState() {
@@ -215,7 +220,9 @@
         base.logoWidth = Number(p.logoWidth) || 40;
         base.logoHeight = Number(p.logoHeight) || 16;
         base.logoTrimmed = !!p.logoTrimmed;
-        base.showDelivery = p.showDelivery !== false;
+        // 老数据没有 deliveryTouched：说明用户从未主动设置过交期开关，一律套用新默认（不勾选）
+        base.deliveryTouched = p.deliveryTouched === true;
+        base.showDelivery = base.deliveryTouched ? (p.showDelivery === true) : false;
         if (!base.customers.some(function (c) { return c.id === p.activeCustomerId; })) {
           base.activeCustomerId = base.customers[0].id;
         } else {
@@ -436,6 +443,7 @@
     chk.checked = state.showDelivery !== false;
     chk.addEventListener('change', function () {
       state.showDelivery = chk.checked;
+      state.deliveryTouched = true;
       renderItems();
       renderPreview();
       saveState();
@@ -585,11 +593,11 @@
       '</div>' +
 
       '<div class="page-footer">' +
-        '<div>地址：' + esc(s.address) +
-          (s.website ? '　网址：' + esc(s.website) : '') + '<br>电话：' + esc(s.phone) +
-          (s.email ? '　邮箱：' + esc(s.email) : '') + '</div>' +
-        '<div>开户行：' + esc(s.bank) +
-          (s.tax ? '　税号：' + esc(s.tax) : '') + '<br>账号：' + esc(s.account) + '</div>' +
+        '<div>地址：' + esc(trimVal(s.address)) +
+          (trimVal(s.website) ? '　网址：' + esc(trimVal(s.website)) : '') + '<br>电话：' + esc(trimVal(s.phone)) +
+          (trimVal(s.email) ? '　邮箱：' + esc(trimVal(s.email)) : '') + '</div>' +
+        '<div>开户行：' + esc(trimVal(s.bank)) +
+          (trimVal(s.tax) ? '　税号：' + esc(trimVal(s.tax)) : '') + '<br>账号：' + esc(trimVal(s.account)) + '</div>' +
       '</div>';
 
     updateTotalsUI(t);
