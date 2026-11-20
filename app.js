@@ -800,56 +800,31 @@
   }
   async function downloadPdf() {
     var btn = document.getElementById('btn-pdf');
-    var hasLib = (typeof window.html2canvas === 'function') && window.jspdf && window.jspdf.jsPDF;
-    if (!hasLib) {
-      toast('PDF 组件未加载，已打开打印窗口（可另存为 PDF）');
-      window.print();
-      return;
-    }
-    var page = document.getElementById('quote-page');
-    var stage = document.getElementById('preview-stage');
-    var oldZoom = page.style.zoom;
-    var oldOverflow = stage.style.overflow;
-    var oldMaxHeight = stage.style.maxHeight;
     var originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = '正在生成…';
-    page.style.zoom = 1;
-    stage.style.overflow = 'visible';
-    stage.style.maxHeight = 'none';
-    await nextFrame();
     try {
-      var canvas = await window.html2canvas(page, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        logging: false,
-        imageTimeout: 15000
-      });
-      var imgData = canvas.toDataURL('image/jpeg', 0.95);
-      var pdf = new window.jspdf.jsPDF({ orientation: 'l', unit: 'mm', format: 'a4', compress: true });
-      var pdfW = 297, pdfH = 210;
-      var renderW = pdfW;
-      var renderH = canvas.height * renderW / canvas.width;
-      var y = 0, pageNo = 0;
-      while (y < renderH - 0.5 && pageNo < 60) {
-        if (pageNo > 0) pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, -y, renderW, renderH, undefined, 'FAST');
-        y += pdfH;
-        pageNo++;
+      if (!window.QuotePdf || typeof window.QuotePdf.download !== 'function') {
+        throw new Error('PDF 导出模块未加载');
       }
-      var cust = ensureCustomer();
-      var name = '报价单_' + (cust.name || '客户') + '_' + (state.doc.no || todayISO());
-      pdf.save(safeFileName(name) + '.pdf');
-      toast('PDF 已生成并下载');
+      var customer = ensureCustomer();
+      await window.QuotePdf.download({
+        seller: state.seller,
+        customer: customer,
+        doc: state.doc,
+        items: state.items,
+        showDelivery: state.showDelivery,
+        logoData: state.logoData,
+        logoWidth: state.logoWidth,
+        logoHeight: state.logoHeight,
+        sealData: state.sealData,
+        defaultSeal: DEFAULT_SEAL
+      });
+      toast('文字版 PDF 已生成');
     } catch (err) {
-      console.error('PDF 生成失败', err);
-      toast('生成失败，已打开打印窗口（可另存为 PDF）');
-      window.print();
+      console.error('文字版 PDF 生成失败', err);
+      toast('PDF 导出失败：' + (err && err.message || '未知错误') + '；可使用打印按钮');
     } finally {
-      page.style.zoom = oldZoom;
-      stage.style.overflow = oldOverflow;
-      stage.style.maxHeight = oldMaxHeight;
       btn.disabled = false;
       btn.textContent = originalText;
     }
