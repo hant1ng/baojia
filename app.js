@@ -798,36 +798,11 @@
   function printQuotation() {
     window.print();
   }
-  async function downloadPdf() {
-    var btn = document.getElementById('btn-pdf');
-    var originalText = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = '正在生成…';
-    try {
-      if (!window.QuotePdf || typeof window.QuotePdf.download !== 'function') {
-        throw new Error('PDF 导出模块未加载');
-      }
-      var customer = ensureCustomer();
-      await window.QuotePdf.download({
-        seller: state.seller,
-        customer: customer,
-        doc: state.doc,
-        items: state.items,
-        showDelivery: state.showDelivery,
-        logoData: state.logoData,
-        logoWidth: state.logoWidth,
-        logoHeight: state.logoHeight,
-        sealData: state.sealData,
-        defaultSeal: DEFAULT_SEAL
-      });
-      toast('文字版 PDF 已生成');
-    } catch (err) {
-      console.error('文字版 PDF 生成失败', err);
-      toast('PDF 导出失败：' + (err && err.message || '未知错误') + '；可使用打印按钮');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = originalText;
-    }
+  function downloadPdf() {
+    // 使用原报价单 HTML + CSS 直接打印为 PDF。
+    // 这样 PDF 与实时预览共用同一套表格列宽、边框、间距、Logo、公章和签章布局，
+    // 浏览器会输出矢量文字，支持选择、复制和搜索。
+    window.print();
   }
 
   /* ---------- 初始化 ---------- */

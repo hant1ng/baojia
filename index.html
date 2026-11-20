@@ -12,14 +12,14 @@
   <div class="brand">
     <div class="brand-mark">报</div>
     <div class="brand-text">
-      <h1>报价单生成器 <span class="app-version">v1.1.0</span></h1>
+      <h1>报价单生成器 <span class="app-version">v1.1.1</span></h1>
       <p>填写信息，一键生成排版工整、可直接打印的 A4 报价单</p>
     </div>
   </div>
   <div class="toolbar-actions">
     <span id="save-status" class="save-status">自动保存已开启</span>
     <button id="btn-print" class="btn btn-primary" title="打印前请在“更多设置”中关闭页眉和页脚，再另存为 PDF，可获得文字清晰的矢量 PDF">打印 / 另存为 PDF</button>
-    <button id="btn-pdf" class="btn btn-accent" title="生成文字可搜索、复制的 PDF 文件；首次使用需联网加载中文字体">直接下载 PDF</button>
+    <button id="btn-pdf" class="btn btn-accent" title="使用原报价单版式生成可搜索、复制的 PDF；在打印窗口选择存储为 PDF">直接下载 PDF</button>
     <button id="btn-sample" class="btn btn-ghost">载入示例</button>
     <button id="btn-clear" class="btn btn-ghost danger">清空</button>
   </div>
@@ -187,9 +187,7 @@
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/pdfmake@0.3.14/build/pdfmake.min.js"></script>
 <script src="assets/seal.b64.js"></script>
-<script src="pdf-export.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
