@@ -394,3 +394,18 @@ button, input, select, textarea { font: inherit; color: inherit; }
     print-color-adjust: exact !important;
   }
 }
+
+
+/* ========== 版本标识 ========== */
+.app-version {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  vertical-align: middle;
+}
